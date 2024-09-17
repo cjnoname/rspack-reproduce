@@ -27,6 +27,7 @@ export default defineConfig(async (env, argv) => {
         experiments: {
           outputModule: true
         },
+        ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/, () => true],
         devtool: "source-map",
         output: {
           filename: `${argv.entry[0].split("/").at(-1).split(".")[0]}.mjs`,
