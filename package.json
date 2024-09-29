@@ -5,15 +5,20 @@
     "s": "rspack --entry test.ts && source-map-explorer dist/test.mjs dist/test.mjs.map"
   },
   "dependencies": {
-    "clean-webpack-plugin": "4.0.0",
-    "source-map-explorer": "2.5.3",
-    "swc-loader": "0.2.6",
-    "@rspack/cli": "1.0.5",
-    "@rspack/core": "1.0.5",
-    "@sentry/node": "8.30.0",
+    "@rspack/cli": "1.0.8",
+    "@rspack/core": "1.0.8",
+    "@sentry/node": "8.32.0",
     "@sentry/webpack-plugin": "2.22.4",
     "@swc-node/register": "1.10.9",
     "@swc/core": "1.7.26",
-    "@swc/helpers": "0.5.13"
+    "@swc/helpers": "0.5.13",
+    "clean-webpack-plugin": "4.0.0",
+    "reflect-metadata": "0.2.2",
+    "source-map-explorer": "2.5.3",
+    "snowflake-sdk": "1.13.1",
+    "swc-loader": "0.2.6"
+  },
+  "devDependencies": {
+    "terser-webpack-plugin": "^5.3.10"
   }
 }
