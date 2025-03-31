@@ -1,0 +1,10 @@
+{
+  "name": "shared",
+  "type": "module",
+  "scripts": {
+    "type-check": "npx tsc",
+    "lint": "cross-env TIMING=1 eslint",
+    "lint-fix": "eslint --fix",
+    "build": "rimraf ../../dist && webpack --mode production"
+  }
+}

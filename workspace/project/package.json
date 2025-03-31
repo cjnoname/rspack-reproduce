@@ -1,0 +1,12 @@
+{
+  "name": "project",
+  "type": "module",
+  "scripts": {
+    "start": "cross-env NODE_OPTIONS=\"--experimental-transform-types --no-warnings\" rspack serve",
+    "build": "rimraf dist && cross-env NODE_OPTIONS=\"--experimental-transform-types --no-warnings\" rspack --mode production",
+    "server": "npm run build && cd dist && node index.mjs",
+    "type-check": "npx tsc",
+    "lint": "cross-env TIMING=1 eslint",
+    "lint-fix": "eslint --fix"
+  }
+}
