@@ -1,23 +1,17 @@
 import { defineConfig } from "@rspack/cli";
-
 import rspack, {
   type CopyRspackPluginOptions,
   type RspackOptions,
   type SwcLoaderOptions
 } from "@rspack/core";
 import path from "path";
-import { sentryWebpackPlugin } from "@sentry/webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 import ESLintPlugin from "eslint-rspack-plugin";
 import RefreshPlugin from "@rspack/plugin-react-refresh";
 import portfinder from "portfinder";
 import readline from "readline";
-import { config } from "dotenv";
 import { readFileSync } from "fs";
-import { isLocal } from "@apraamcos/ui-library/deploy";
-
-const parsedConfig = config().parsed;
 
 export const getSharedRspackConfig = async ({
   argv,
@@ -148,12 +142,6 @@ export const getSharedRspackConfig = async ({
       ? []
       : [
           new NodePolyfillPlugin(),
-          new rspack.DefinePlugin(
-            Object.keys(!isLocal() ? process.env : parsedConfig ?? {}).reduce((prev, next) => {
-              prev[`process.env.${next}`] = JSON.stringify(process.env[next]);
-              return prev;
-            }, {})
-          ),
           new rspack.ProvidePlugin({
             Buffer: ["buffer", "Buffer"]
           })
@@ -254,90 +242,9 @@ export const getSharedRspackConfig = async ({
           })
         );
       }
-      if (!isLocal()) {
-        clientConfig.plugins?.push(
-          sentryWebpackPlugin({
-            org: process.env.SENTRY_ORG,
-            project: process.env.PROJECT_NAME,
-            authToken: process.env.SENTRY_AUTH_TOKEN,
-            telemetry: false,
-            release: {
-              deploy: {
-                env: process.env.STAGE!.toUpperCase()
-              }
-            },
-            moduleMetadata: hasModuleMetadata
-              ? ({ release }) => ({ dsn: process.env.SENTRY_DSN, release })
-              : undefined
-          })
-        );
-      }
     }
     return clientConfig;
   };
-
-  const getServerConfig = async () =>
-    <RspackOptions>{
-      mode: "production",
-      experiments: {
-        outputModule: true
-      },
-      ignoreWarnings: [/^(?!CriticalDependenciesWarning$)/, () => true],
-      stats: {
-        modules: false,
-        errorDetails: true
-      },
-      optimization: {
-        minimize: true,
-        minimizer: [new rspack.SwcJsMinimizerRspackPlugin({})]
-      },
-      devtool: "source-map",
-      target: "node",
-      resolve,
-      entry: serverEntry
-        ? serverEntry
-        : isLocal()
-        ? {
-            index: `${dirname}/src/server/index.ts`
-          }
-        : {
-            lambda: `${dirname}/src/server/lambda.ts`
-          },
-      module: {
-        rules: [
-          ...sharedLoaders(false, true),
-          {
-            test: /\.css$/,
-            use: [
-              {
-                loader: rspack.CssExtractRspackPlugin.loader,
-                options: {
-                  publicPath: "./public"
-                }
-              },
-              "css-loader"
-            ],
-            type: "javascript/auto"
-          }
-        ]
-      },
-      output: {
-        filename: "[name].mjs",
-        path: path.join(dirname, "dist"),
-        chunkFormat: "module",
-        chunkLoading: "import",
-        library: {
-          type: "module"
-        }
-      },
-      plugins: [
-        ...sharedProductionPlugins(onLambda),
-        new rspack.CssExtractRspackPlugin({
-          filename: "[name].css",
-          chunkFilename: "[id].css"
-        })
-      ]
-    };
 
   const isDev = argv.mode !== "production";
 
@@ -353,9 +260,7 @@ export const getSharedRspackConfig = async ({
     }
   }
 
-  return isDev || onlyEmitClient
-    ? await getClientConfig(isDev)
-    : [await getClientConfig(isDev), await getServerConfig()];
+  return await getClientConfig(isDev);
 };
 
 const askUserForConfirmation = (port: number) => {
@@ -380,9 +285,6 @@ export default defineConfig(async (env, argv) =>
     argv,
     dirname: import.meta.dirname,
     swcFilePath: `${import.meta.dirname}/../../.swcrc`,
-    alias: {
-      "@shared": path.resolve(import.meta.dirname, "../shared")
-    },
     copyPluginPatterns: [
       {
         from: path.resolve(

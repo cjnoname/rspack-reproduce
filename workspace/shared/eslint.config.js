@@ -160,5 +160,9 @@ export const getLintModuleConfiguration = ({ files, tsConfigPath, extraRules }) 
 
 export default tseslint.config(
   ...commonLintConfig,
-  ...getLintModuleConfiguration({ files: ["**/*.ts", "**/*.tsx"], extraRules: {} })
+  ...getLintModuleConfiguration({
+    files: ["**/*.ts", "**/*.tsx"],
+    extraRules: {},
+    tsConfigPath: "workspace/shared/tsconfig.json"
+  })
 );
